@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UP EV Charging Points Finder | उत्तर प्रदेश EV चार्जिंग पॉइंट्स फाइंडर</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+        [lang="hi"] {
+            font-family: 'Poppins', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <header class="bg-orange-600 text-white p-4 shadow-md">
+        <div class="container mx-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h1 class="text-2xl font-bold" id="mainTitle">उत्तर प्रदेश EV चार्जिंग पॉइंट्स फाइंडर</h1>
+                <div class="flex gap-2">
+                    <button onclick="setLanguage('hi')" class="bg-white text-orange-600 px-3 py-1 rounded-md text-sm">हिंदी</button>
+                    <button onclick="setLanguage('en')" class="bg-white text-orange-600 px-3 py-1 rounded-md text-sm">English</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto p-4">
+        <div id="authContainer" class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <h2 class="text-xl font-semibold mb-4" id="authTitle">Login or Register</h2>
+            <form id="authForm" class="space-y-4">
+                <input type="email" id="email" class="w-full p-2 border rounded-md" required>
+                <input type="password" id="password" class="w-full p-2 border rounded-md" required>
+                <button type="submit" id="authSubmit" class="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 transition duration-300 ease-in-out w-full"></button>
+            </form>
+            <div class="mt-4 flex justify-between">
+                <button id="registerToggle" class="text-blue-500 hover:underline text-sm"></button>
+                <button id="forgotPassword" class="text-blue-500 hover:underline text-sm"></button>
+            </div>
+            <p id="authMessage" class="mt-4 text-center text-sm"></p>
+        </div>
+
+        <div id="mainContent" class="hidden">
+            <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                <h2 class="text-xl font-semibold mb-4" id="searchTitle"></h2>
+                <div class="flex flex-col sm:flex-row gap-4 mb-4">
+                    <input type="text" id="location" class="flex-grow p-2 border rounded-md">
+                    <button id="searchButton" onclick="findChargingPoints()" class="bg-green-500 text-white px-6 py-2 rounded-md hover:bg-green-600 transition duration-300 ease-in-out"></button>
+                </div>
+                <div id="map" class="h-64 bg-gray-200 rounded-md"></div>
+            </div>
+
+            <h3 class="text-lg font-semibold mb-4" id="topStationsTitle"></h3>
+            <div id="topChargingPoints" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8"></div>
+
+            <h3 class="text-lg font-semibold mb-4" id="searchResultsTitle"></h3>
+            <div id="chargingPoints" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+        </div>
+    </main>
+
+    <footer class="bg-gray-200 text-center p-4 mt-8">
+        <p id="footerText"></p>
+    </footer>
+
+    <script>
+        const translations = {
+            hi: {
+                mainTitle: "उत्तर प्रदेश EV चार्जिंग पॉइंट्स फाइंडर",
+                authTitle: "लॉगिन या रजिस्टर करें",
+                emailPlaceholder: "ईमेल",
+                passwordPlaceholder: "पासवर्ड",
+                loginButton: "लॉगिन",
+                registerButton: "रजिस्टर",
+                createAccount: "नया खाता बनाएं",
+                forgotPassword: "पासवर्ड भूल गए?",
+                searchTitle: "नजदीकी चार्जिंग पॉइंट्स खोजें",
+                locationPlaceholder: "अपना स्थान दर्ज करें",
+                searchButton: "खोजें",
+                topStationsTitle: "उत्तर प्रदेश के टॉप चार्जिंग स्टेशन",
+                searchResultsTitle: "खोज परिणाम",
+                footerText: "© 2024 उत्तर प्रदेश EV चार्जिंग पॉइंट्स फाइंडर. सर्वाधिकार सुरक्षित."
+            },
+            en: {
+                mainTitle: "Uttar Pradesh EV Charging Points Finder",
+                authTitle: "Login or Register",
+                emailPlaceholder: "Email",
+                passwordPlaceholder: "Password",
+                loginButton: "Login",
+                registerButton: "Register",
+                createAccount: "Create New Account",
+                forgotPassword: "Forgot Password?",
+                searchTitle: "Find Nearby Charging Points",
+                locationPlaceholder: "Enter your location",
+                searchButton: "Search",
+                topStationsTitle: "Top Charging Stations in UP",
+                searchResultsTitle: "Search Results",
+                footerText: "© 2024 Uttar Pradesh EV Charging Points Finder. All rights reserved."
+            }
+        };
+
+        let currentLanguage = 'hi';
+
+        function setLanguage(lang) {
+            currentLanguage = lang;
+            updateUI();
+        }
+
+        function updateUI() {
+            const t = translations[currentLanguage];
+            document.getElementById('mainTitle').textContent = t.mainTitle;
+            document.getElementById('authTitle').textContent = t.authTitle;
+            document.getElementById('email').placeholder = t.emailPlaceholder;
+            document.getElementById('password').placeholder = t.passwordPlaceholder;
+            document.getElementById('authSubmit').textContent = t.loginButton;
+            document.getElementById('registerToggle').textContent = t.createAccount;
+            document.getElementById('forgotPassword').textContent = t.forgotPassword;
+            document.getElementById('searchTitle').textContent = t.searchTitle;
+            document.getElementById('location').placeholder = t.locationPlaceholder;
+            document.getElementById('searchButton').textContent = t.searchButton;
+            document.getElementById('topStationsTitle').textContent = t.topStationsTitle;
+            document.getElementById('searchResultsTitle').textContent = t.searchResultsTitle;
+            document.getElementById('footerText').textContent = t.footerText;
+        }
+
+        // Initialize the UI with default language
+        document.addEventListener('DOMContentLoaded', () => {
+            updateUI();
+        });
+
+        // Rest of your existing JavaScript code remains the same
+        // (Firebase configuration, authentication logic, charging points display, etc.)
+    </script>
+<script>document.body.addEventListener('wheel', e => { if (!e.ctrlKey) return; e.preventDefault(); return }, { passive: false })</script>
+	</body>
+</html>
